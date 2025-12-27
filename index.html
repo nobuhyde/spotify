@@ -1,61 +1,115 @@
-<script>
-    // --- 【重要：ここを書き換え！】 ---
-    const CLIENT_ID = 'あなたのクライアントID'; // 32桁の英数字
-    const REDIRECT_URI = 'https://ユーザー名.github.io/リポジトリ名/'; // 末尾の / まで完全に一致させる
-    // ------------------------------------
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Quiet Player</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #121212; color: white; text-align: center; padding: 20px; }
+        .container { max-width: 400px; margin: 40px auto; border: 1px solid #333; padding: 30px; border-radius: 20px; background: #181818; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h2 { color: #1DB954; margin-bottom: 20px; }
+        button { background: #1DB954; color: white; border: none; padding: 12px 24px; border-radius: 30px; font-weight: bold; cursor: pointer; margin: 10px; font-size: 16px; transition: transform 0.2s; }
+        button:active { transform: scale(0.95); }
+        button.secondary { background: #333; }
+        #status { color: #b3b3b3; font-size: 0.9em; margin: 15px 0; min-height: 1.2em; }
+        #track-info { margin-top: 20px; padding: 15px; background: #282828; border-radius: 10px; text-align: left; }
+        #track-name { font-weight: bold; font-size: 1.1em; margin: 0; }
+        #artist-name { color: #b3b3b3; margin: 5px 0 0 0; }
+        .controls { margin-top: 20px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
 
-    let player;
-    let accessToken = "";
-
-    // URLからトークンを抽出（ログイン後に戻ってきたとき用）
-    const getAccessTokenFromUrl = () => {
-        const hash = window.location.hash.substring(1).split('&').reduce((initial, item) => {
-            if (item) {
-                var parts = item.split('=');
-                initial[parts[0]] = decodeURIComponent(parts[1]);
-            }
-            return initial;
-        }, {});
-        return hash.access_token;
-    };
-
-    accessToken = getAccessTokenFromUrl();
-
-    // ログインボタンの処理（URLを修正しました！）
-    document.getElementById('loginBtn').onclick = () => {
-        const scope = 'streaming user-read-email user-read-private user-modify-playback-state';
+    <div class="container">
+        <h2>My Quiet Player</h2>
         
-        // 【修正】これが正しいSpotifyのログイン先アドレスです
-        const authUrl = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(scope)}`;
-        
-        window.location.href = authUrl;
-    };
+        <div id="login-section">
+            <button id="loginBtn">Spotifyにログイン</button>
+            <p id="status">ログインしてプレイヤーを起動してください</p>
+        </div>
 
-    // Spotify SDKの準備ができた時の処理
-    window.onSpotifyWebPlaybackSDKReady = () => {
-        if (!accessToken) return;
+        <div id="player-section" class="hidden">
+            <div id="track-info">
+                <p id="track-name">曲名: ---</p>
+                <p id="artist-name">アーティスト: ---</p>
+            </div>
+            <div class="controls">
+                <button class="secondary" onclick="player.previousTrack()">前</button>
+                <button id="togglePlay">再生 / 一時停止</button>
+                <button class="secondary" onclick="player.nextTrack()">次</button>
+            </div>
+            <p id="status-ready">接続準備中...</p>
+        </div>
+    </div>
 
-        player = new Spotify.Player({
-            name: 'My iPad Web Player',
-            getOAuthToken: cb => { cb(accessToken); },
-            volume: 0.5
-        });
+    <script src="https://sdk.scdn.co/spotify-player.js"></script>
+    <script>
+        // ==========================================
+        // 【重要】ここを自分のものに書き換えてください
+        // ==========================================
+        const CLIENT_ID = '6a92367dd459406c8bd757edc80521b0'; 
+        const REDIRECT_URI = 'https://nobuhyde.github.io/spotify/'; 
+        // ==========================================
 
-        player.addListener('ready', ({ device_id }) => {
-            document.getElementById('status').innerText = '接続完了！他のデバイスからこのプレイヤーを選んでください';
-            document.getElementById('loginBtn').style.display = 'none';
-        });
+        let player;
+        let accessToken = "";
 
-        player.addListener('player_state_changed', state => {
-            if (!state) return;
-            document.getElementById('track-name').innerText = '曲名: ' + state.track_window.current_track.name;
-            document.getElementById('artist-name').innerText = 'アーティスト: ' + state.track_window.current_track.artists[0].name;
-        });
+        // URLのハッシュ（#以降）からトークンを取得
+        const getAccessToken = () => {
+            const hash = window.location.hash.substring(1).split('&').reduce((initial, item) => {
+                if (item) {
+                    var parts = item.split('=');
+                    initial[parts[0]] = decodeURIComponent(parts[1]);
+                }
+                return initial;
+            }, {});
+            return hash.access_token;
+        };
 
-        player.connect();
-    };
+        accessToken = getAccessToken();
 
-    if (accessToken) {
-        document.getElementById('status').innerText = '認証成功。プレイヤーを準備中...';
-    }
-</script>
+        // ログインボタンの動作（正しいURLに修正済み）
+        document.getElementById('loginBtn').onclick = () => {
+            const scope = 'streaming user-read-email user-read-private user-modify-playback-state';
+            const authUrl = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(scope)}`;
+            window.location.href = authUrl;
+        };
+
+        // SDKの準備ができたら実行
+        window.onSpotifyWebPlaybackSDKReady = () => {
+            if (!accessToken) return;
+
+            // 画面表示を切り替え
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('player-section').classList.remove('hidden');
+
+            player = new Spotify.Player({
+                name: 'My iPad Quiet Player',
+                getOAuthToken: cb => { cb(accessToken); },
+                volume: 0.5
+            });
+
+            // デバイスが準備完了したとき
+            player.addListener('ready', ({ device_id }) => {
+                document.getElementById('status-ready').innerText = '接続完了！他のデバイスからこのプレイヤーを選んでください';
+                window.location.hash = ""; // URLをきれいにする
+            });
+
+            // 再生状態が変わったとき
+            player.addListener('player_state_changed', state => {
+                if (!state) return;
+                document.getElementById('track-name').innerText = state.track_window.current_track.name;
+                document.getElementById('artist-name').innerText = state.track_window.current_track.artists[0].name;
+            });
+
+            // 再生・停止ボタン
+            document.getElementById('togglePlay').onclick = () => {
+                player.togglePlay();
+            };
+
+            player.connect();
+        };
+    </script>
+</body>
+</html>
