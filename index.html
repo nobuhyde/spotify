@@ -3,179 +3,643 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Quiet Player</title>
+    <title>バズのカラクリ - SNSの魔術</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         :root {
-            --spotify-green: #1DB954;
-            --bg-black: #121212;
-            --card-bg: #181818;
-            --text-white: #ffffff;
-            --text-gray: #b3b3b3;
+            /* 全体の背景色定義 */
+            --bg-color: #f8f9fa;
+            --text-color: #333;
+            --accent-cyan: #00bfb7;
+            --accent-pink: #ff0050;
+            --card-bg: #ffffff;
+            --border-color: #eaeaea;
+            --shadow-sm: 0 4px 6px rgba(0,0,0,0.05);
+            --shadow-md: 0 10px 15px rgba(0,0,0,0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-black);
-            color: var(--text-white);
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            /* ページ全体にドットパターンを適用 */
+            background-color: var(--bg-color);
+            background-image: radial-gradient(#dee2e6 1px, transparent 1px);
+            background-size: 20px 20px;
+            font-family: 'Noto Sans JP', sans-serif;
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 40px 20px; /* 全体の余白 */
+            min-height: 100vh;
         }
 
-        .container {
-            background-color: var(--card-bg);
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        /* Container */
+        .infographic-container {
             width: 100%;
-            max-width: 400px;
+            max-width: 1200px; /* ワイド画面用に幅を確保 */
+            margin: 0 auto;
+            background: transparent;
+            box-shadow: none;
+            border-radius: 0;
+        }
+
+        /* Header Section */
+        header {
+            background: transparent;
+            /* 上下の余白を調整し、コンテンツエリアとの距離を適切に */
+            padding: 40px 2%; 
+            border-bottom: none;
+            position: relative;
+            margin-bottom: 30px;
+        }
+        
+        /* ヘッダー内部のレイアウト用ラッパー */
+        .header-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* PC画面（900px以上）で左右レイアウトに切り替え */
+        @media (min-width: 900px) {
+            .header-inner {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center; /* 中央揃え */
+                text-align: left;
+            }
+            .header-left {
+                flex: 1;
+                text-align: left;
+            }
+            .header-right {
+                flex: 0 0 400px; /* 右側の幅を固定 */
+            }
+            /* タイトルの左揃え */
+            h1 {
+                text-align: left;
+                margin-bottom: 0; /* 横並び時は下の余白不要 */
+            }
+            .header-badge {
+                margin-left: 0;
+            }
+        }
+        
+        /* ヘッダーの装飾 */
+        header::before {
+            content: '';
+            position: absolute;
+            top: 10%; left: 0;
+            width: 250px; height: 250px;
+            background: var(--accent-cyan);
+            border-radius: 50%;
+            opacity: 0.08;
+            filter: blur(50px);
+            z-index: 0;
+        }
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: 10%; right: 0;
+            width: 250px; height: 250px;
+            background: var(--accent-pink);
+            border-radius: 50%;
+            opacity: 0.08;
+            filter: blur(50px);
+            z-index: 0;
+        }
+
+        .header-badge {
+            display: inline-block;
+            background: #222;
+            color: #fff;
+            font-size: 0.9rem;
+            padding: 8px 20px;
+            border-radius: 50px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            letter-spacing: 0.05em;
+            box-shadow: var(--shadow-sm);
+        }
+
+        h1 {
+            font-family: 'Montserrat', 'Noto Sans JP', sans-serif;
+            font-size: clamp(2.5rem, 5vw, 4.5rem);
+            line-height: 1.1;
+            font-weight: 900;
+            color: #000;
+            position: relative;
+            z-index: 1;
+            letter-spacing: -0.02em;
+            text-align: center; /* モバイル初期値 */
+            margin-bottom: 20px; /* モバイル初期値 */
+        }
+
+        /* 問いと仮説のブロックスタイル - デザイン統一 */
+        .qa-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .qa-box {
+            display: flex;
+            align-items: center;
+            background: #fff;
+            padding: 18px 25px; /* サイズ統一 */
+            border-radius: 8px; /* 角丸統一 */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); /* 影統一 */
+            width: 100%;
+            justify-content: flex-start;
+            gap: 20px;
+            border-left: 6px solid var(--accent-cyan); /* デフォルト（問い）のアクセントバー */
+            transition: transform 0.2s;
+        }
+
+        .qa-box:hover {
+            transform: translateX(5px);
+        }
+
+        .qa-label {
+            background: var(--accent-cyan); /* デフォルト（問い）の色 */
+            color: #fff;
+            font-size: 0.9rem;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            white-space: nowrap;
+            min-width: 60px;
             text-align: center;
         }
 
-        h1 { color: var(--spotify-green); margin-bottom: 20px; font-size: 24px; }
-
-        .btn {
-            background-color: var(--spotify-green);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 50px;
-            font-size: 16px;
+        .qa-text {
+            font-size: 1.2rem;
             font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s, background-color 0.2s;
-            text-decoration: none;
-            display: inline-block;
+            color: #333;
+            letter-spacing: 0.05em;
         }
 
-        .btn:active { transform: scale(0.95); }
-        .btn:hover { background-color: #1ed760; }
-        .btn-secondary { background-color: #333; margin: 5px; padding: 10px 20px; font-size: 14px; }
+        /* 仮説用のスタイル（色のみ変更して構造は完全に統一） */
+        .qa-box.hypothesis {
+            border-left-color: var(--accent-pink); /* 左線をピンクに */
+            background: #fff; /* 背景も白に統一 */
+            border-top: none;
+            border-right: none;
+            border-bottom: none;
+        }
+        .qa-box.hypothesis .qa-label {
+            background: var(--accent-pink); /* ラベルをピンクに */
+        }
+        .qa-box.hypothesis .qa-text {
+            color: var(--accent-pink); /* テキスト色で強調 */
+            font-size: 1.2rem; /* サイズも問いと統一 */
+        }
 
-        #player-ui { display: none; margin-top: 20px; }
+        .arrow-connector {
+            display: none;
+        }
 
-        .track-info {
-            margin: 25px 0;
-            padding: 20px;
-            background-color: #282828;
+        /* Main Grid Layout */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px; /* 少し狭めて一体感を出す */
+            padding: 0 2%;
+            position: relative;
+        }
+
+        /* Center Connector Line */
+        .main-content::before {
+            content: '';
+            position: absolute;
+            left: 50%; top: 20px; bottom: 20px;
+            width: 2px;
+            background-image: linear-gradient(to bottom, #ccc 40%, transparent 40%);
+            background-size: 2px 15px;
+            transform: translateX(-50%);
+            z-index: -1;
+        }
+        
+        .column {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .col-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+            /* 背景をなくしてすっきりさせる */
+            padding: 10px 0;
+            border-bottom: 3px solid transparent;
+        }
+        .left-col .col-header { border-color: var(--accent-cyan); }
+        .right-col .col-header { border-color: var(--accent-pink); }
+        
+        .step-num {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 3rem;
+            font-weight: 900;
+            line-height: 1;
+            opacity: 0.15;
+            position: absolute; /* タイトルの後ろに配置 */
+            left: -10px;
+            z-index: -1;
+        }
+        .col-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            padding-left: 10px; /* 数字と被らないように */
+        }
+
+        .left-col .step-num { color: var(--accent-cyan); }
+        .left-col .col-title { color: var(--accent-cyan); }
+        .right-col .step-num { color: var(--accent-pink); }
+        .right-col .col-title { color: var(--accent-pink); }
+
+        /* Card Styles */
+        .card {
+            background: var(--card-bg);
             border-radius: 12px;
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: 1px solid transparent;
+            height: 100%; /* 高さを揃える */
+        }
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
         }
 
-        .track-name { font-size: 1.2em; font-weight: bold; margin-bottom: 5px; }
-        .artist-name { color: var(--text-gray); font-size: 1em; }
+        .system-card {
+            border-left: 5px solid var(--accent-cyan);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .card-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card-title i { color: var(--accent-cyan); }
+        .badge {
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            background: #eee;
+            color: #555;
+        }
+        .badge.highlight { background: var(--accent-cyan); color: white; }
+        .badge.super { background: var(--accent-pink); color: white; }
 
-        .controls { display: flex; justify-content: center; align-items: center; gap: 15px; }
-
-        #status {
-            font-size: 12px;
-            color: var(--text-gray);
-            margin-top: 20px;
-            line-height: 1.5;
+        /* Content Cards (2列固定) */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .content-item {
+            background: var(--card-bg);
+            border: 2px solid #fff0f5;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-sm);
+            aspect-ratio: 1.5 / 1; /* 横長カードにして高さを抑える */
+        }
+        .content-item:hover {
+            border-color: var(--accent-pink);
+            background: #fffafa;
+        }
+        .content-icon {
+            font-size: 1.8rem;
+            color: var(--accent-pink);
+            margin-bottom: 8px;
+            display: block;
+        }
+        .content-label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 3px;
+            font-size: 0.95rem;
+        }
+        .content-desc {
+            font-size: 0.8rem;
+            color: #666;
+            line-height: 1.3;
         }
 
-        .hidden { display: none; }
+        /* Fire Starter Box */
+        .fire-box {
+            background: linear-gradient(135deg, #222 0%, #444 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            margin-top: 10px;
+            box-shadow: var(--shadow-sm);
+        }
+        .fire-box::after {
+            content: '\f135';
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            position: absolute;
+            right: -10px; bottom: -20px;
+            font-size: 4rem;
+            color: rgba(255,255,255,0.1);
+            transform: rotate(-45deg);
+        }
+        .fire-title {
+            color: var(--accent-pink);
+            font-weight: 800;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+        }
+
+        /* Conclusion Section */
+        .conclusion {
+            background: #fff;
+            margin: 60px 2% 40px; /* 横幅に合わせてマージン調整 */
+            padding: 40px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+            border: none;
+            position: relative;
+        }
+        .conclusion::before {
+            content: 'CONCLUSION';
+            position: absolute;
+            top: -12px; left: 50%;
+            transform: translateX(-50%);
+            background: #222;
+            color: #fff;
+            padding: 4px 15px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            letter-spacing: 0.1em;
+        }
+
+        .formula-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .formula-box {
+            background: #f1f3f5;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .formula-op {
+            color: #aaa;
+            font-size: 1.2rem;
+            font-weight: 900;
+        }
+        .formula-result {
+            font-size: 1.4rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, var(--accent-cyan), var(--accent-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .conclusion-text {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #444;
+            line-height: 1.6;
+        }
+
+        /* Footer */
+        footer {
+            background: transparent;
+            color: #666;
+            padding: 20px 5%;
+            font-size: 0.8rem;
+            border-top: none;
+            text-align: center;
+        }
+        footer p {
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #222;
+            display: inline-block;
+            border-bottom: 2px solid var(--accent-cyan);
+            padding-bottom: 3px;
+        }
+        .ref-list {
+            list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+        }
+        .ref-list li {
+            background: rgba(255,255,255,0.6);
+            padding: 4px 10px;
+            border-radius: 4px;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 900px) {
+            header { padding: 40px 5% 20px; }
+            h1 { font-size: 2.5rem; text-align: center; }
+            .header-badge { display: block; margin: 0 auto 15px; width: fit-content; }
+            
+            .header-inner { flex-direction: column; }
+            .qa-container { width: 100%; }
+
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+            .main-content::before {
+                display: none;
+            }
+            .col-header { justify-content: center; }
+            .step-num { left: 50%; transform: translateX(-50%); }
+            
+            .formula-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .ref-list {
+                flex-direction: column;
+                gap: 5px;
+            }
+            .conclusion {
+                margin: 40px 5%;
+                padding: 30px;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>My Quiet Player</h1>
+    <div class="infographic-container">
+        
+        <!-- HEADER -->
+        <header>
+            <div class="header-inner">
+                <div class="header-left">
+                    <span class="header-badge">誰も教えてくれなかった「SNSの魔術」の全貌</span>
+                    <h1>バズのカラクリ</h1>
+                </div>
+                
+                <div class="header-right qa-container">
+                    <div class="qa-box">
+                        <span class="qa-label">問い</span>
+                        <span class="qa-text">バズの共通点とは？</span>
+                    </div>
+                    <div class="qa-box hypothesis">
+                        <span class="qa-label">仮説</span>
+                        <span class="qa-text">意外性</span>
+                    </div>
+                </div>
+            </div>
+        </header>
 
-        <!-- ログイン前 -->
-        <div id="login-section">
-            <p>Spotifyに接続して、静かな環境で音楽を再生しましょう。</p>
-            <button id="loginBtn" class="btn">Spotifyにログイン</button>
-            <p id="status">※ホーム画面の自動プレビューは一切流れません</p>
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            
+            <!-- LEFT COLUMN: SYSTEM -->
+            <div class="column left-col">
+                <div class="col-header">
+                    <span class="step-num">01</span>
+                    <span class="col-title">AIに好かれる仕組み</span>
+                </div>
+
+                <div class="card system-card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="fa-solid fa-rotate"></i> 視聴完了・ループ率</div>
+                        <span class="badge super">超重要</span>
+                    </div>
+                    <p>「最後まで見られたか？」「何回も再生されたか？」AIはここを最重視。オチへの期待感を作れるかが勝負。</p>
+                </div>
+
+                <div class="card system-card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="fa-solid fa-users-viewfinder"></i> 真似・再生産</div>
+                        <span class="badge highlight">最強</span>
+                    </div>
+                    <p>同じ音源や振り付けの投稿が増えると「トレンド発生」と認識。関連動画全体を一気にブーストする！</p>
+                </div>
+
+                <div class="card system-card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="fa-solid fa-bookmark"></i> 保存・シェア</div>
+                        <span class="badge highlight">重要</span>
+                    </div>
+                    <p>「後で見返す（保存）」「友達に送る（シェア）」行動は、ただの「いいね」よりも遥かに価値が高い。</p>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: CONTENT -->
+            <div class="column right-col">
+                <div class="col-header">
+                    <span class="step-num">02</span>
+                    <span class="col-title">人の心を動かす中身</span>
+                </div>
+
+                <div class="content-grid">
+                    <div class="content-item">
+                        <i class="fa-solid fa-heart content-icon"></i>
+                        <span class="content-label">共感・あるある</span>
+                        <span class="content-desc">「わかる〜！」<br>なぁぜなぁぜ</span>
+                    </div>
+                    <div class="content-item">
+                        <i class="fa-solid fa-camera-retro content-icon"></i>
+                        <span class="content-label">懐かしさ・エモ</span>
+                        <span class="content-desc">平成女児<br>デジカメ</span>
+                    </div>
+                    <div class="content-item">
+                        <i class="fa-solid fa-lightbulb content-icon"></i>
+                        <span class="content-label">有益・便利</span>
+                        <span class="content-desc">メイク術・攻略<br>保存必須</span>
+                    </div>
+                    <div class="content-item">
+                        <i class="fa-solid fa-bolt content-icon"></i>
+                        <span class="content-label">意外性</span>
+                        <span class="content-desc">予想外のオチ<br>最後まで見ちゃう</span>
+                    </div>
+                </div>
+
+                <div class="fire-box">
+                    <div class="fire-title"><i class="fa-solid fa-fire"></i> 火付け役（起点）</div>
+                    <p>インフルエンサー、ドラマ、オーディション番組。<br>「あの人がやってるなら」が、一般ユーザーの真似するハードルを一気に下げる。</p>
+                </div>
+            </div>
+
         </div>
 
-        <!-- ログイン後 / プレイヤーUI -->
-        <div id="player-ui">
-            <div class="track-info">
-                <div id="track-name" class="track-name">再生準備完了</div>
-                <div id="artist-name" class="artist-name">他のデバイスから曲を選んでください</div>
+        <!-- CONCLUSION -->
+        <div class="conclusion">
+            <div class="formula-container">
+                <div class="formula-box">人の心を動かす「中身」</div>
+                <div class="formula-op"><i class="fa-solid fa-xmark"></i></div>
+                <div class="formula-box">AIが好む「仕組み」</div>
+                <div class="formula-op"><i class="fa-solid fa-equals"></i></div>
+                <div class="formula-result">爆発的拡散（バズ）</div>
             </div>
-
-            <div class="controls">
-                <button class="btn btn-secondary" onclick="player.previousTrack()">前へ</button>
-                <button id="togglePlay" class="btn">再生 / 停止</button>
-                <button class="btn btn-secondary" onclick="player.nextTrack()">次へ</button>
-            </div>
-
-            <p id="connection-status" style="color: var(--spotify-green); margin-top: 20px; font-size: 14px;">
-                接続待機中...
+            <p class="conclusion-text">
+                バズは偶然じゃない。「中身」と「仕組み」が<br>
+                ガッチリ噛み合ったときに起こる必然の現象だ！
             </p>
         </div>
+
+        <!-- FOOTER -->
+        <footer>
+            <p>REFERENCE</p>
+            <ul class="ref-list">
+                <li>TikTok Newsroom "How TikTok recommends videos #ForYou"</li>
+                <li>Cornell University (2021) "The algorithm behind the For You Page"</li>
+                <li>University of Washington (2024) / 株式会社N.D.Promotion</li>
+                <li>渋谷トレンドリサーチ / ラッシュアップ株式会社 (2024)</li>
+            </ul>
+        </footer>
+
     </div>
 
-    <!-- Spotify Web Playback SDK -->
-    <script src="https://sdk.scdn.co/spotify-player.js"></script>
-    <script>
-        const CLIENT_ID = '6a92367dd459406c8bd757edc80521b0';
-        const REDIRECT_URI = 'https://nobuhyde.github.io/spotify/';
-
-        let player;
-        const hash = window.location.hash.substring(1);
-        const params = new URLSearchParams(hash);
-        let accessToken = params.get('access_token');
-
-        // ログインボタンの動作
-        document.getElementById('loginBtn').onclick = () => {
-            const scope = [
-                'streaming',
-                'user-read-email',
-                'user-read-private',
-                'user-modify-playback-state',
-                'user-read-playback-state'
-            ].join(' ');
-            
-            const authUrl = `https://accounts.spotify.com/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(scope)}`;
-            window.location.href = authUrl;
-        };
-
-        // SDKの準備ができたとき
-        window.onSpotifyWebPlaybackSDKReady = () => {
-            if (!accessToken) return;
-
-            // 画面の切り替え
-            document.getElementById('login-section').classList.add('hidden');
-            document.getElementById('player-ui').style.display = 'block';
-
-            player = new Spotify.Player({
-                name: 'My iPad Quiet Player',
-                getOAuthToken: cb => { cb(accessToken); },
-                volume: 0.5
-            });
-
-            // デバイスの準備完了
-            player.addListener('ready', ({ device_id }) => {
-                console.log('Ready with Device ID', device_id);
-                document.getElementById('connection-status').innerText = '接続完了！他のデバイスの「デバイス一覧」からこのプレイヤーを選んで再生してください。';
-                // URLのハッシュを消去
-                window.history.replaceState({}, document.title, window.location.pathname);
-            });
-
-            // 再生状態の変更を監視
-            player.addListener('player_state_changed', state => {
-                if (!state) return;
-                document.getElementById('track-name').innerText = state.track_window.current_track.name;
-                document.getElementById('artist-name').innerText = state.track_window.current_track.artists[0].name;
-            });
-
-            // 再生・停止切り替え
-            document.getElementById('togglePlay').onclick = () => {
-                player.togglePlay();
-            };
-
-            player.connect();
-        };
-
-        // エラーハンドリング
-        if (params.get('error')) {
-            document.getElementById('status').innerText = "エラーが発生しました。設定を確認してください。";
-            document.getElementById('status').style.color = "red";
-        }
-    </script>
 </body>
 </html>
